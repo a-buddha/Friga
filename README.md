@@ -4,7 +4,7 @@
 █████╗  ██████╔╝██║██║  ███╗███████║
 ██╔══╝  ██╔══██╗██║██║   ██║██╔══██║
 ██║     ██║  ██║██║╚██████╔╝██║  ██║
-╚═╝     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝  ╚═╝                                    
+╚═╝     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝  ╚═╝                                   
 ```
 A desktop GUI for the Frida (https://frida.re) instrumentation toolkit, aimed at
 people who want to do mobile security testing without living in the CLI. Built as
@@ -19,7 +19,7 @@ Device discovery and the output console is the first sprint of this application 
 ~ Dark theme
 
 ## To Run
-Needs Python 3.10 and ADB on PATH environment variables.\
+Needs Python 3.10 and ADB on PATH environment variables.
 
 ```bash
 python -m venv .venv
