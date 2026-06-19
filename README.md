@@ -1,10 +1,11 @@
+```
 ███████╗██████╗ ██╗ ██████╗  █████╗ 
 ██╔════╝██╔══██╗██║██╔════╝ ██╔══██╗
 █████╗  ██████╔╝██║██║  ███╗███████║
 ██╔══╝  ██╔══██╗██║██║   ██║██╔══██║
 ██║     ██║  ██║██║╚██████╔╝██║  ██║
 ╚═╝     ╚═╝  ╚═╝╚═╝ ╚═════╝ ╚═╝  ╚═╝                                    
-
+```
 A desktop GUI for the Frida (https://frida.re) instrumentation toolkit, aimed at
 people who want to do mobile security testing without living in the CLI. Built as
 my final year project
