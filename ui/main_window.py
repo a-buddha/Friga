@@ -6,9 +6,13 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDockWidget, QMainWindow
 
 from core.adb_manager import AdbManager
+from core.frida_manager import FridaManager
 from core.log_manager import LogLevel, LogManager
+from core.server_deployer import ServerDeployer
 from ui.console_panel import ConsolePanel
 from ui.device_panel import DevicePanel
+from ui.process_panel import ProcessPanel
+from ui.server_panel import ServerPanel
 
 _minsize = (1280, 720)
 
@@ -22,11 +26,30 @@ class MainWindow(QMainWindow):
         # Core managers
         self.log_manager = LogManager(self)
         self.adb_manager = AdbManager(self)
-        self.adb_manager.log.connect(self._on_core_log)
-        self.adb_manager.error.connect(
-            lambda msg: self.statusBar().showMessage(msg, 8000)
-        )
+        self.server_deployer = ServerDeployer(self)
+        self.frida_manager = FridaManager(self)
+        for mgr in (self.adb_manager, self.server_deployer, self.frida_manager):
+            mgr.log.connect(self._on_core_log)
+            mgr.error.connect(lambda msg: self.statusBar().showMessage(msg, 8000))
 
+        # frida-server panel under  the device list
+        self.server_panel = ServerPanel(self.server_deployer)
+        server_dock = QDockWidget("frida-server", self)
+        server_dock.setWidget(self.server_panel)
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, server_dock)
+
+        # Process / attach panel on the right
+        self.process_panel = ProcessPanel(self.frida_manager)
+        process_dock = QDockWidget("Processes", self)
+        process_dock.setWidget(self.process_panel)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, process_dock)
+
+        # The selected device drives the server & process panels
+        self.device_panel.device_selected.connect(self.server_panel.set_device)
+        self.device_panel.device_selected.connect(self.process_panel.set_device)
+        # After a deploy, list the processes automatically
+        self.server_deployer.deployed.connect(lambda _pid: self.process_panel.refresh())
+        
         # Device list 
         self.device_panel = DevicePanel(self.adb_manager)
         device_dock = QDockWidget("Device Manager", self)
