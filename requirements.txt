@@ -1,2 +1,3 @@
 # Python 3.10 (for frida-python compatibility).
 PyQt6>=6.6
+frida>=17.0
