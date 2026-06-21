@@ -11,7 +11,7 @@ people who want to do mobile security testing without living in the CLI. Built a
 my final year project
 
 ## What works so far
-Will be updated completely after completion
+Will be updated after completion
 
 ## To Run
 Needs Python 3.10 and ADB on PATH environment variables.
