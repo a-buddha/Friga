@@ -12,6 +12,7 @@ from core.server_deployer import ServerDeployer
 from ui.console_panel import ConsolePanel
 from ui.device_panel import DevicePanel
 from ui.process_panel import ProcessPanel
+from ui.script_editor import ScriptEditorPanel
 from ui.server_panel import ServerPanel
 
 _minsize = (1280, 720)
@@ -31,6 +32,13 @@ class MainWindow(QMainWindow):
         for mgr in (self.adb_manager, self.server_deployer, self.frida_manager):
             mgr.log.connect(self._on_core_log)
             mgr.error.connect(lambda msg: self.statusBar().showMessage(msg, 8000))
+
+        # Script output goes to the console too.
+        self.frida_manager.message.connect(self._on_core_log)
+
+        # Script editor in the middle
+        self.script_editor = ScriptEditorPanel(self.frida_manager)
+        self.setCentralWidget(self.script_editor)
 
         # frida-server panel under  the device list
         self.server_panel = ServerPanel(self.server_deployer)
