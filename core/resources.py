@@ -11,6 +11,7 @@ from pathlib import Path
 
 APP_ROOT = Path(__file__).resolve().parent.parent
 BUNDLED_DIR = APP_ROOT / "bundled"
+SCRIPTS_DIR = APP_ROOT / "scripts"
 
 def is_windows() -> bool:
     return platform.system() == "Windows"
@@ -60,3 +61,10 @@ def resolve_frida_server(arch: str) -> str:
             f"No bundled frida-server for '{arch}'. Expected it at '{binary}'."
         )
     return str(binary)
+
+# Frida 17 dropped the global Java/ObjC bridges, so scripts using Java need it prepended
+def read_java_bridge() -> str | None:
+    bridge = BUNDLED_DIR / "agent" / "java-bridge.js"
+    if bridge.is_file():
+        return bridge.read_text(encoding="utf-8")
+    return None
