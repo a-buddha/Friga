@@ -11,7 +11,7 @@ people who want to do mobile security testing without living in the CLI. Built a
 my final year project
 
 ## What works so far
-Will be updated after completion
+This started as a device discovery and a console; since then I've been building it out so now it includes frida-server deployment, process attach and spawn, a script editor, and one-click APK patching. More refinement and testing still to come this semester
 
 ## To Run
 Needs Python 3.10 and ADB on PATH environment variables.
