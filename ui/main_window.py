@@ -8,7 +8,9 @@ from PyQt6.QtWidgets import QDockWidget, QMainWindow
 from core.adb_manager import AdbManager
 from core.frida_manager import FridaManager
 from core.log_manager import LogLevel, LogManager
+from core.patcher import Patcher
 from core.server_deployer import ServerDeployer
+from ui.apk_patcher_panel import ApkPatcherPanel
 from ui.console_panel import ConsolePanel
 from ui.device_panel import DevicePanel
 from ui.process_panel import ProcessPanel
@@ -29,10 +31,10 @@ class MainWindow(QMainWindow):
         self.adb_manager = AdbManager(self)
         self.server_deployer = ServerDeployer(self)
         self.frida_manager = FridaManager(self)
-        for mgr in (self.adb_manager, self.server_deployer, self.frida_manager):
+        self.patcher = Patcher(self)
+        for mgr in (self.adb_manager, self.server_deployer, self.frida_manager, self.patcher):
             mgr.log.connect(self._on_core_log)
             mgr.error.connect(lambda msg: self.statusBar().showMessage(msg, 8000))
-
         # Script output goes to the console too.
         self.frida_manager.message.connect(self._on_core_log)
 
@@ -40,7 +42,16 @@ class MainWindow(QMainWindow):
         self.script_editor = ScriptEditorPanel(self.frida_manager)
         self.setCentralWidget(self.script_editor)
 
-        # frida-server panel under  the device list
+        # Device list
+        self.device_panel = DevicePanel(self.adb_manager)
+        device_dock = QDockWidget("Device Manager", self)
+        device_dock.setWidget(self.device_panel)
+        device_dock.setAllowedAreas(
+            Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
+        )
+        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, device_dock)
+
+        # frida-server panel under the device list
         self.server_panel = ServerPanel(self.server_deployer)
         server_dock = QDockWidget("frida-server", self)
         server_dock.setWidget(self.server_panel)
@@ -52,20 +63,18 @@ class MainWindow(QMainWindow):
         process_dock.setWidget(self.process_panel)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, process_dock)
 
-        # The selected device drives the server & process panels
+        # APK patcher (non-rooted path) under the process panel
+        self.apk_patcher_panel = ApkPatcherPanel(self.patcher)
+        patcher_dock = QDockWidget("APK Patcher", self)
+        patcher_dock.setWidget(self.apk_patcher_panel)
+        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, patcher_dock)
+
+        # The selected device drives the server + process + patcher panels
         self.device_panel.device_selected.connect(self.server_panel.set_device)
         self.device_panel.device_selected.connect(self.process_panel.set_device)
+        self.device_panel.device_selected.connect(self.apk_patcher_panel.set_device)
         # After a deploy, list the processes automatically
         self.server_deployer.deployed.connect(lambda _pid: self.process_panel.refresh())
-        
-        # Device list 
-        self.device_panel = DevicePanel(self.adb_manager)
-        device_dock = QDockWidget("Device Manager", self)
-        device_dock.setWidget(self.device_panel)
-        device_dock.setAllowedAreas(
-            Qt.DockWidgetArea.LeftDockWidgetArea | Qt.DockWidgetArea.RightDockWidgetArea
-        )
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, device_dock)
 
         # Output console at the bottom
         self.console_panel = ConsolePanel(self.log_manager)
