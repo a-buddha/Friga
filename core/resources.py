@@ -8,11 +8,28 @@ from __future__ import annotations
 
 import platform
 import shutil
+import sys
 from pathlib import Path
 
-APP_ROOT = Path(__file__).resolve().parent.parent
+
+def _resource_root() -> Path:
+    # read-only bundled stuff (bundled/, assets/). in a PyInstaller build these
+    # get unpacked next to the frozen code (sys._MEIPASS); in dev it's the repo root
+    if getattr(sys, "frozen", False):
+        return Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
+    return Path(__file__).resolve().parent.parent
+
+
+def _data_root() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
+    return Path(__file__).resolve().parent.parent
+
+
+APP_ROOT = _resource_root()   # read-only resources
+DATA_ROOT = _data_root()      # writable data
 BUNDLED_DIR = APP_ROOT / "bundled"
-SCRIPTS_DIR = APP_ROOT / "scripts"
+SCRIPTS_DIR = DATA_ROOT / "scripts"
 
 
 def is_windows() -> bool:
@@ -46,7 +63,7 @@ def resolve_adb() -> str:
     return resolve_tool("adb", "adb")
 
 
-# Android ABI (ro.product.cpu.abi) -> the frida-server build folder under bundled/
+# Android ABI (ro.product.cpu.abi), the frida-server build folder under bundled/
 _ABI_TO_FRIDA_ARCH = {
     "arm64-v8a": "arm64",
     "armeabi-v7a": "arm",
@@ -73,8 +90,7 @@ def resolve_frida_server(arch: str) -> str:
     return str(binary)
 
 
-# Frida 17 dropped the global Java/ObjC bridges, so scripts using Java need it
-# prepended. This is the bridge precompiled to a single IIFE that sets globalThis.Java.
+# Frida 17 dropped the global Java/ObjC bridges, so scripts using Java need it prepended, this is the bridge precompiled to a single IIFE that sets globalThis.Java.
 def read_java_bridge() -> str | None:
     bridge = BUNDLED_DIR / "agent" / "java-bridge.js"
     if bridge.is_file():
@@ -82,7 +98,7 @@ def read_java_bridge() -> str | None:
     return None
 
 
-# --- APK patching tools ---
+# APK patching tools
 
 def _resolve_jre_bin(name: str) -> str:
     exe = _exe(name)

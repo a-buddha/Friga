@@ -18,7 +18,7 @@ from PyQt6.QtCore import QObject, QThread, pyqtSignal
 
 from .adb_manager import run_adb
 from .resources import (
-    APP_ROOT,
+    DATA_ROOT,
     frida_arch_for_abi,
     is_windows,
     resolve_apksigner_jar,
@@ -43,8 +43,8 @@ _GADGET_CONFIG = {
     }
 }
 
-_KEYSTORE = APP_ROOT / "keystore" / "debug.keystore"
-_OUTPUT_DIR = APP_ROOT / "output"
+_KEYSTORE = DATA_ROOT / "keystore" / "debug.keystore"
+_OUTPUT_DIR = DATA_ROOT / "output"
 
 
 def _run(cmd: list[str], timeout: int = _STEP_TIMEOUT) -> subprocess.CompletedProcess[str]:
@@ -134,7 +134,6 @@ _LOAD_LINES = [
 def _inject_loadlibrary(smali: Path) -> None:
     lines = smali.read_text(encoding="utf-8").splitlines()
 
-    # Existing static constructor -> prepend our two instructions.
     for i, line in enumerate(lines):
         if line.strip().startswith(".method") and "constructor <clinit>()V" in line:
             j = i + 1
@@ -153,7 +152,6 @@ def _inject_loadlibrary(smali: Path) -> None:
                 return
             break
 
-    # No static constructor -> add one before the first method (or at the end).
     new_clinit = [
         ".method static constructor <clinit>()V",
         "    .locals 1",
@@ -208,7 +206,7 @@ class PatchWorker(QThread):
         java = resolve_java()
         apktool = resolve_apktool_jar()
 
-        # 1) arch
+        # 1) architecture detection
         self._step(1, "Detecting target architecture…")
         abi = _choose_abi(self._apk, self._serial)
         arch = frida_arch_for_abi(abi)
@@ -303,7 +301,7 @@ class PatchWorker(QThread):
         out = (r.stdout or "") + (r.stderr or "")
         if r.returncode == 0 and "Success" in out:
             return True
-        # A re-signed app clashes with an existing install — remove and retry.
+        # A re-signed app clashes with an existing install so remove and retry.
         if package and ("INSTALL_FAILED_UPDATE_INCOMPATIBLE" in out or "signatures do not match" in out):
             self.log.emit("Existing install has a different signature — reinstalling…", "warning")
             run_adb(["uninstall", package], serial=self._serial, timeout=60)
