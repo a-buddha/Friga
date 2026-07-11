@@ -39,6 +39,8 @@ class DevicePanel(QWidget):
         super().__init__(parent)
         self._adb = adb_manager
         self._devices: list[Device] = []
+        # serial an opened project asked for; re-applied each scan until it shows up
+        self._pending_serial: str | None = None
 
         self._table = QTableWidget(0, len(_HEADERS))
         self._table.setHorizontalHeaderLabels(_HEADERS)
@@ -79,8 +81,19 @@ class DevicePanel(QWidget):
             return self._devices[row].serial
         return None
 
+    def select_serial(self, serial: str | None) -> None:
+        # ask for a device to be the active one; select now if present, else
+        # remember it and apply when it next turns up in a scan
+        self._pending_serial = serial
+        if serial is None:
+            return
+        for row, device in enumerate(self._devices):
+            if device.serial == serial:
+                self._table.selectRow(row)
+                return
+
     def _populate(self, devices: list[Device]) -> None:
-        previous = self.selected_serial
+        previous = self._pending_serial if self._pending_serial is not None else self.selected_serial
         self._devices = devices
         self._table.setRowCount(len(devices))
         for row, device in enumerate(devices):
@@ -107,6 +120,9 @@ class DevicePanel(QWidget):
             target_row = next(
                 (i for i, d in enumerate(self._devices) if d.serial == previous), -1
             )
+        # requested device showed up — stop forcing it
+        if target_row >= 0 and previous == self._pending_serial:
+            self._pending_serial = None
         if target_row < 0:
             target_row = next(
                 (i for i, d in enumerate(self._devices) if d.is_usable), -1

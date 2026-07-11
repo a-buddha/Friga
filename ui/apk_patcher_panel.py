@@ -1,4 +1,6 @@
-""" APK patcher panel """
+""" APK patcher panel
+Pick an APK, pick the device, and patch + install it with frida-gadget in one click.
+The detailed steps stream to the console; this panel just shows a progress bar """
 
 from __future__ import annotations
 

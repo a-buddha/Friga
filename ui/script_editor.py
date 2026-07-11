@@ -237,6 +237,14 @@ class ScriptEditorPanel(QWidget):
         if matches:
             self._library.setCurrentItem(matches[0])
 
+    def script_text(self) -> str:
+        # current editor contents, for saving a project
+        return self._editor.text()
+
+    def set_script_text(self, text: str) -> None:
+        # replace editor contents, for loading a project / reset
+        self._editor.setText(text)
+
     def _on_run(self) -> None:
         self._frida.run_script(self._editor.text(), inject_java=self._inject_java.isChecked())
 
