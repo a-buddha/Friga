@@ -1,4 +1,4 @@
-# Python 3.10 (for frida-python compatibility).
+# Python 3.10+ (frida-python compatibility; abi3 wheels also work on newer).
 PyQt6>=6.6
 PyQt6-QScintilla>=2.14
-frida>=17.0
+frida==17.12.0   # keep this matched to the bundled frida-server / frida-gadget
