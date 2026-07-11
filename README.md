@@ -43,9 +43,11 @@ python3 -m venv .venv
 
 ## The tools it bundles
 
-The external tools it drives — ADB, frida-server, the frida-gadget libraries, apktool, apksigner and a small JRE, normally live under `bundled/` but aren't checked in here because they're large. The app looks in `bundled/` first and falls back to whatever's on your PATH, so device detection works with just ADB installed and you can add the rest when you want those features.
+The external tools it uses like ADB, frida-server, the frida-gadget libraries, apktool, apksigner and a small JRE, normally live under `bundled/` but aren't checked in here because they're large. The app looks in `bundled/` first and falls back to whatever's on your PATH, so device detection works with just ADB installed and you can add the rest when you want those features.
 
-The Frida binaries have to match the frida version in `requirements.txt` (currently 17.12.0). Check what you've got with:
+**Easiest way:** download `friga-bundled.zip` from this repo's [Releases](../../releases) page and extract it into the project root, that drops in the whole `bundled/` folder, ready to go, no manual downloads.
+
+To set them up by hand instead (or to use a different frida version): the Frida binaries have to match the frida version in `requirements.txt` (currently 17.12.0). Check what you've got with:
 
 ```bash
 frida --version
