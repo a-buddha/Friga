@@ -84,8 +84,14 @@ class ConsolePanel(QWidget):
         )
 
     def _append(self, entry: LogEntry) -> None:
+        # moveCursor(End) drags the horizontal scrollbar back to make the (short) new
+        # line visible, even if you'd scrolled right to read a long one — save/restore
+        # it so new output doesn't yank your place away.
+        hbar = self._text.horizontalScrollBar()
+        h_pos = hbar.value()
         self._text.append(self._line(entry))
         self._text.moveCursor(QTextCursor.MoveOperation.End)
+        hbar.setValue(h_pos)
 
     def _on_entry(self, entry: LogEntry) -> None:
         if self._matches(entry):
