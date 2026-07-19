@@ -110,7 +110,7 @@ class DevicePanel(QWidget):
         if not devices:
             self._summary.setText("No devices found.")
         else:
-            self._summary.setText(f"{len(devices)} device(s) — {usable} ready to use.")
+            self._summary.setText(f"{len(devices)} device(s): {usable} ready to use.")
 
         self._restore_or_autoselect(previous)
 

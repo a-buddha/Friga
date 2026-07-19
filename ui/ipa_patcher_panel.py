@@ -29,7 +29,7 @@ class IpaPatcherPanel(QWidget):
         super().__init__(parent)
         self._ipa: str | None = None
 
-        note = QLabel("⚠ Coming soon — iOS support is a design preview only")
+        note = QLabel("Coming soon! iOS support is a design preview only")
         note.setStyleSheet("color: #dcdcaa;")
         note.setWordWrap(True)
 
