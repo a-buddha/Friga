@@ -5,9 +5,16 @@ import sys
 
 from PyQt6.QtWidgets import QApplication
 
-from ui.fonts import register_bundled_fonts
-from ui.main_window import MainWindow
-from ui.theme import DARK_QSS
+# Registers the friga:// scheme Monaco is served over. Both this and the
+# QtWebEngine import it performs have to happen before a QApplication exists, so
+# it stays above everything else that might construct one.
+from ui.editor import register_scheme
+
+register_scheme()
+
+from ui.fonts import register_bundled_fonts  # noqa: E402
+from ui.main_window import MainWindow  # noqa: E402
+from ui.theme import DARK_QSS  # noqa: E402
 
 
 def _run_selftest(app: QApplication) -> int:
@@ -27,6 +34,7 @@ def _run_selftest(app: QApplication) -> int:
         ("java (bundled JRE)", resources.resolve_java),
         ("frida-server x86_64", lambda: resources.resolve_frida_server("x86_64")),
         ("gadget arm64", lambda: resources.resolve_gadget("arm64")),
+        ("monaco assets", resources.resolve_monaco_root),
     ]
     ok = True
     for name, resolve in probes:
@@ -36,6 +44,7 @@ def _run_selftest(app: QApplication) -> int:
             ok = False
             print(f"  FAIL {name}: {exc}")
     print(f"  java-bridge: {'present' if resources.read_java_bridge() else 'MISSING'}")
+    print(f"  editor backend: {type(window.script_editor.editor()).__name__}")
     print("SELFTEST_OK" if ok else "SELFTEST_FAIL")
 
     QTimer.singleShot(200, app.quit)
