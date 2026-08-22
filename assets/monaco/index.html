@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Friga Script Editor</title>
+<!-- editor.main.js appends its own <link> for vs/editor/editor.main.css, so loading
+     it here as well would just fetch 350 KB twice. -->
+<style>
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: #181818;
+  }
+  /* Shown until Monaco has painted, so there is never a white flash on a dark UI. */
+  #boot {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6b6b6b;
+    font: 13px "Segoe UI", sans-serif;
+    background: #181818;
+  }
+  #boot.hidden { display: none; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="boot">Loading editor…</div>
+<script src="qwebchannel.js"></script>
+<script src="vs/loader.js"></script>
+<script src="friga-editor.js"></script>
+</body>
+</html>
