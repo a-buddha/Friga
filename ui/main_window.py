@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
 
         # Script editor in the middle
         self.script_editor = ScriptEditorPanel(self.frida_manager)
+        self.script_editor.log.connect(self._on_core_log)
         self.setCentralWidget(self.script_editor)
 
         # keep every dock so the View menu + saveState/restoreState can find them

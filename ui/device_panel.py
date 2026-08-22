@@ -110,15 +110,19 @@ class DevicePanel(QWidget):
         if not devices:
             self._summary.setText("No devices found.")
         else:
-            self._summary.setText(f"{len(devices)} device(s): {usable} ready to use.")
+            self._summary.setText(f"{len(devices)} device(s) — {usable} ready to use.")
 
         self._restore_or_autoselect(previous)
 
     def _restore_or_autoselect(self, previous: str | None) -> None:
+        # a serial that's still listed but no longer connected (e.g. a closed
+        # emulator ADB hasn't forgotten yet) must not keep winning here, or the
+        # panel stays stuck on a dead device forever even after a new one shows up
         target_row = -1
         if previous is not None:
             target_row = next(
-                (i for i, d in enumerate(self._devices) if d.serial == previous), -1
+                (i for i, d in enumerate(self._devices) if d.serial == previous and d.is_usable),
+                -1,
             )
         # requested device showed up — stop forcing it
         if target_row >= 0 and previous == self._pending_serial:
