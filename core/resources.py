@@ -29,7 +29,18 @@ def _data_root() -> Path:
 APP_ROOT = _resource_root()   # read-only resources
 DATA_ROOT = _data_root()      # writable data
 BUNDLED_DIR = APP_ROOT / "bundled"
+ASSETS_DIR = APP_ROOT / "assets"
 SCRIPTS_DIR = DATA_ROOT / "scripts"
+
+
+def resolve_monaco_root() -> Path:
+    """The vendored Monaco editor + Frida typings, served over the friga:// scheme."""
+    root = ASSETS_DIR / "monaco"
+    if not (root / "index.html").is_file():
+        raise FileNotFoundError(
+            f"Monaco editor assets are missing. Expected them at '{root}'."
+        )
+    return root
 
 
 def is_windows() -> bool:
