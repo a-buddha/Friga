@@ -46,6 +46,7 @@ from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtWidgets import QVBoxLayout, QWidget
 
 from core.resources import resolve_monaco_root
+from ui import theme
 
 SCHEME_NAME = b"friga"
 _HOST = "editor"
@@ -196,6 +197,7 @@ class MonacoEditor(QWidget):
         payload = json.dumps({
             "text": initial_text,
             "typings": _load_typings(root / "types"),
+            "theme": theme.monaco_colours(),
         })
 
         self._view = QWebEngineView(self)
@@ -219,6 +221,7 @@ class MonacoEditor(QWidget):
         self._bridge.runRequested.connect(self.runRequested)
         self._bridge.saveRequested.connect(self.saveRequested)
         self._bridge.cursorMoved.connect(self.cursorMoved)
+        theme.bus.changed.connect(lambda _n: self.apply_theme())
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
@@ -261,6 +264,10 @@ class MonacoEditor(QWidget):
     # --- misc controls ---
     def insert_text(self, text: str) -> None:
         self._call(f"window.friga.insertText({json.dumps(text)});")
+
+    def apply_theme(self) -> None:
+        """Recolour the editor to the active app theme."""
+        self._call(f"window.friga.setTheme({json.dumps(theme.monaco_colours())});")
 
     def set_read_only(self, flag: bool) -> None:
         self._call(f"window.friga.setReadOnly({json.dumps(bool(flag))});")

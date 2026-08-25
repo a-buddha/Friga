@@ -18,6 +18,7 @@ from PyQt6.QtWidgets import (
 )
 
 from core.patcher import Patcher
+from ui import theme
 
 
 class ApkPatcherPanel(QWidget):
@@ -28,7 +29,7 @@ class ApkPatcherPanel(QWidget):
         self._apk: str | None = None
 
         self._apk_label = QLabel("No APK selected")
-        self._apk_label.setStyleSheet("color: #9b9b9b;")
+        self._apk_label.setStyleSheet(f"color: {theme.FG_MUTED};")
         self._browse_btn = QPushButton("Choose APK…")
         self._browse_btn.clicked.connect(self._on_browse)
 
@@ -72,7 +73,7 @@ class ApkPatcherPanel(QWidget):
         if path:
             self._apk = path
             self._apk_label.setText(Path(path).name)
-            self._apk_label.setStyleSheet("color: #d4d4d4;")
+            self._apk_label.setStyleSheet(f"color: {theme.FG};")
             self._update_enabled()
 
     def _on_patch(self) -> None:

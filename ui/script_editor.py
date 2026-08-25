@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
 
 from core.frida_manager import FridaManager
 from core.script_store import ScriptStore, ScriptStoreError
+from ui import theme
 from ui.editor import create_editor
 
 _TEMPLATE = """\
@@ -99,7 +100,7 @@ class ScriptEditorPanel(QWidget):
         )
 
         self._status = QLabel()
-        self._status.setStyleSheet("color: #9b9b9b;")
+        self._status.setStyleSheet(f"color: {theme.FG_MUTED};")
 
         toolbar = QHBoxLayout()
         toolbar.addWidget(self._new_btn)
@@ -119,6 +120,7 @@ class ScriptEditorPanel(QWidget):
         self._frida.session_started.connect(lambda _i: self._update_enabled())
         self._frida.session_stopped.connect(lambda _r: self._update_enabled())
         self._frida.script_state_changed.connect(lambda _s: self._update_enabled())
+        self._frida.script_error.connect(self._on_script_error)
 
         self._refresh_library()
         self._update_status()
@@ -239,6 +241,14 @@ class ScriptEditorPanel(QWidget):
         self._update_status()
 
     # --- running ---
+    def inject_java_enabled(self) -> bool:
+        return self._inject_java.isChecked()
+
+    def read_source(self, callback) -> None:
+        """Fetch the live editor contents (async) — used to spawn with a script."""
+        self._editor.clear_error_markers()
+        self._editor.read_text(callback)
+
     def _on_run(self) -> None:
         inject = self._inject_java.isChecked()
         self._editor.clear_error_markers()
@@ -249,6 +259,14 @@ class ScriptEditorPanel(QWidget):
         # Read through the editor rather than the mirror: Run can be triggered
         # (F5, or a click) inside the change-push debounce window.
         self._editor.read_text(run)
+
+    def _on_script_error(self, line: int, column: int, message: str, offset: int) -> None:
+        # Put a squiggle on the offending line. The editor subtracts the offset so
+        # the marker lands on the user's line, not one shifted by the Java bridge.
+        self._editor.set_error_markers(
+            [{"line": line, "column": column, "message": message}],
+            line_offset=offset,
+        )
 
     # --- state ---
     def _on_text_changed(self) -> None:

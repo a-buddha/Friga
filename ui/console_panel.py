@@ -20,7 +20,8 @@ from PyQt6.QtWidgets import (
 )
 
 from core.log_manager import LogEntry, LogManager
-from ui.theme import CONSOLE_COLOURS
+from ui import theme
+
 
 _KEYWORDS = ("password", "token", "username", "email", "credentials")
 
@@ -71,15 +72,16 @@ class ConsolePanel(QWidget):
         self._render_all()
         self._log_manager.entry_added.connect(self._on_entry)
         self._log_manager.cleared.connect(self._text.clear)
+        theme.bus.changed.connect(lambda _n: self._render_all())
 
     def _matches(self, entry: LogEntry) -> bool:
         return not self._filter or self._filter in entry.text.lower()
 
     def _line(self, entry: LogEntry) -> str:
-        colour = CONSOLE_COLOURS.get(entry.level, "#d4d4d4")
+        colour = theme.console_colours().get(entry.level, theme.INFO)
         safe = html.escape(entry.text)
         return (
-            f'<span style="color:#6b6b6b">[{entry.time_str}]</span> '
+            f'<span style="color:{theme.FG_FAINT}">[{entry.time_str}]</span> '
             f'<span style="color:{colour}">{safe}</span>'
         )
 

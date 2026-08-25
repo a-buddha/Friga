@@ -4,6 +4,7 @@ them by name, and attach to one or spawn an app fresh. Shows the active session 
 
 from __future__ import annotations
 
+from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtWidgets import (
     QAbstractItemView,
     QGroupBox,
@@ -19,9 +20,14 @@ from PyQt6.QtWidgets import (
 )
 
 from core.frida_manager import FridaManager, ProcessInfo, SessionInfo
+from ui import theme
 
 
 class ProcessPanel(QWidget):
+    # (serial, package) — the window fulfils this by grabbing the current editor
+    # script and spawning with it, so hooks land before the app starts.
+    spawnRequested = pyqtSignal(str, str)
+
     def __init__(self, frida_manager: FridaManager, parent: QWidget | None = None) -> None:
         super().__init__(parent)
         self._frida = frida_manager
@@ -59,16 +65,21 @@ class ProcessPanel(QWidget):
         self._spawn_input.setPlaceholderText("Package identifier, e.g. com.example.app")
         self._spawn_input.textChanged.connect(self._update_enabled)
         self._spawn_btn = QPushButton("Spawn")
+        self._spawn_btn.setToolTip(
+            "Launch the app under Frida. The current editor script is injected before "
+            "the app starts, so anti-root / SSL-pinning hooks run first."
+        )
         self._spawn_btn.clicked.connect(self._on_spawn)
 
-        spawn_box = QGroupBox("Spawn an app")
+        spawn_box = QGroupBox("Spawn an app (script injected at startup)")
         spawn_layout = QHBoxLayout(spawn_box)
         spawn_layout.addWidget(self._spawn_input)
         spawn_layout.addWidget(self._spawn_btn)
 
         self._session_value = QLabel("No active session")
-        self._session_value.setStyleSheet("color: #9b9b9b;")
+        self._session_value.setStyleSheet(f"color: {theme.FG_MUTED};")
         self._detach_btn = QPushButton("Detach")
+        self._detach_btn.setProperty("class", "ghost")
         self._detach_btn.clicked.connect(self._frida.detach)
 
         session_box = QGroupBox("Active session")
@@ -133,16 +144,16 @@ class ProcessPanel(QWidget):
     def _on_spawn(self) -> None:
         identifier = self._spawn_input.text().strip()
         if identifier and self._serial:
-            self._frida.spawn(self._serial, identifier)
+            self.spawnRequested.emit(self._serial, identifier)
 
     def _on_session_started(self, info: SessionInfo) -> None:
         self._session_value.setText(f"{info.name}  (PID {info.pid})  on {info.serial}")
-        self._session_value.setStyleSheet("color: #4ec9b0; font-weight: 600;")
+        self._session_value.setStyleSheet(f"color: {theme.SUCCESS}; font-weight: 600;")
         self._update_enabled()
 
     def _on_session_stopped(self, _reason: str) -> None:
         self._session_value.setText("No active session")
-        self._session_value.setStyleSheet("color: #9b9b9b;")
+        self._session_value.setStyleSheet(f"color: {theme.FG_MUTED};")
         self._update_enabled()
 
     def _update_enabled(self) -> None:

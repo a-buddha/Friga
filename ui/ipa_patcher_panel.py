@@ -18,6 +18,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from ui import theme
+
 _DISABLED_REASON = (
     "IPA patching needs macOS and a jailbroken iOS device, which is out of scope "
     "for this project. This panel is a design preview of the iOS workflow."
@@ -30,11 +32,11 @@ class IpaPatcherPanel(QWidget):
         self._ipa: str | None = None
 
         note = QLabel("Coming soon! iOS support is a design preview only")
-        note.setStyleSheet("color: #dcdcaa;")
+        note.setStyleSheet(f"color: {theme.WARNING};")
         note.setWordWrap(True)
 
         self._ipa_label = QLabel("No IPA selected")
-        self._ipa_label.setStyleSheet("color: #9b9b9b;")
+        self._ipa_label.setStyleSheet(f"color: {theme.FG_MUTED};")
         self._browse_btn = QPushButton("Choose IPA…")
         self._browse_btn.clicked.connect(self._on_browse)
 
@@ -71,4 +73,4 @@ class IpaPatcherPanel(QWidget):
         if path:
             self._ipa = path
             self._ipa_label.setText(Path(path).name)
-            self._ipa_label.setStyleSheet("color: #d4d4d4;")
+            self._ipa_label.setStyleSheet(f"color: {theme.FG};")

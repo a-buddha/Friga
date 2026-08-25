@@ -12,9 +12,9 @@ from ui.editor import register_scheme
 
 register_scheme()
 
-from ui.fonts import register_bundled_fonts  # noqa: E402
+from ui import theme  # noqa: E402
+from ui.fonts import register_bundled_fonts, ui_font  # noqa: E402
 from ui.main_window import MainWindow  # noqa: E402
-from ui.theme import DARK_QSS  # noqa: E402
 
 
 def _run_selftest(app: QApplication) -> int:
@@ -56,8 +56,9 @@ def main() -> int:
     app = QApplication(sys.argv)
     app.setApplicationName("Friga")
     app.setOrganizationName("APU-FYP")  # gives QSettings a stable spot to persist the layout
-    app.setStyleSheet(DARK_QSS)
     register_bundled_fonts()
+    app.setFont(ui_font())  # so native dialogs match the Inter UI, not just the QSS
+    theme.apply(app, theme.saved_name())  # last-used theme, or Crimson by default
 
     if "--selftest" in sys.argv:
         return _run_selftest(app)

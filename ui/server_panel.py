@@ -14,6 +14,7 @@ from PyQt6.QtWidgets import (
 )
 
 from core.server_deployer import ServerDeployer
+from ui import theme
 
 
 class ServerPanel(QWidget):
@@ -24,7 +25,7 @@ class ServerPanel(QWidget):
 
         self._device_value = QLabel("None selected")
         self._status_value = QLabel("Not deployed")
-        self._set_status_colour("#9b9b9b")
+        self._set_status_colour(theme.FG_MUTED)
 
         info_box = QGroupBox("frida-server")
         info_layout = QVBoxLayout(info_box)
@@ -58,7 +59,7 @@ class ServerPanel(QWidget):
         self._serial = serial
         self._device_value.setText(serial or "None selected")
         self._status_value.setText("Not deployed")
-        self._set_status_colour("#9b9b9b")
+        self._set_status_colour(theme.FG_MUTED)
         self._update_enabled()
 
     def _on_deploy(self) -> None:
@@ -69,21 +70,21 @@ class ServerPanel(QWidget):
         if self._serial:
             self._deployer.stop(self._serial)
             self._status_value.setText("Stopped")
-            self._set_status_colour("#9b9b9b")
+            self._set_status_colour(theme.FG_MUTED)
 
     def _on_busy_changed(self, busy: bool) -> None:
         if busy:
             self._status_value.setText("Deploying…")
-            self._set_status_colour("#dcdcaa")
+            self._set_status_colour(theme.WARNING)
         self._update_enabled(busy)
 
     def _on_deployed(self, pid: str) -> None:
         self._status_value.setText(f"Running (PID {pid})")
-        self._set_status_colour("#4ec9b0")
+        self._set_status_colour(theme.SUCCESS)
 
     def _on_error(self, _message: str) -> None:
         self._status_value.setText("Failed")
-        self._set_status_colour("#f44747")
+        self._set_status_colour(theme.ERROR)
 
     def _update_enabled(self, busy: bool | None = None) -> None:
         if busy is None:
@@ -101,7 +102,7 @@ class ServerPanel(QWidget):
         layout = QHBoxLayout(row)
         layout.setContentsMargins(0, 0, 0, 0)
         key = QLabel(label)
-        key.setStyleSheet("color: #9cdcfe;")
+        key.setStyleSheet(f"color: {theme.LABEL_KEY};")
         key.setFixedWidth(60)
         layout.addWidget(key)
         layout.addWidget(value_widget)

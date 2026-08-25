@@ -34,6 +34,22 @@ def register_bundled_fonts() -> None:
     _registered = True
 
 
+_UI_PREFERRED = "Inter"
+_UI_FALLBACKS = ("Segoe UI", "Ubuntu", "Noto Sans", "DejaVu Sans", "Sans Serif")
+
+
+def ui_font(point_size: int = 10) -> QFont:
+    """The proportional UI font (Inter if bundled, else a system sans)."""
+    register_bundled_fonts()
+    families = set(QFontDatabase.families())
+    chosen = _UI_PREFERRED if _UI_PREFERRED in families else next(
+        (f for f in _UI_FALLBACKS if f in families), None
+    )
+    font = QFont(chosen) if chosen else QFont()
+    font.setPointSize(point_size)
+    return font
+
+
 def editor_font(point_size: int = 11) -> QFont:
     register_bundled_fonts()
     families = set(QFontDatabase.families())

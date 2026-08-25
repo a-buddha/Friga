@@ -20,36 +20,43 @@
     var suppressChange = false;   // set while we apply text that came *from* Python
     var pushTimer = null;
 
-    // Matches ui/theme.py's palette so the editor and the rest of the app agree.
-    var THEME = {
-        base: "vs-dark",
-        inherit: true,
-        rules: [
-            { token: "", foreground: "d4d4d4", background: "181818" },
-            { token: "comment", foreground: "6a9955" },
-            { token: "keyword", foreground: "569cd6" },
-            { token: "string", foreground: "ce9178" },
-            { token: "number", foreground: "b5cea8" },
-            { token: "type", foreground: "4ec9b0" },
-            { token: "identifier", foreground: "9cdcfe" }
-        ],
-        colors: {
-            "editor.background": "#181818",
-            "editor.foreground": "#d4d4d4",
-            "editor.lineHighlightBackground": "#2a2a2b",
-            "editor.selectionBackground": "#094771",
-            "editorLineNumber.foreground": "#6b6b6b",
-            "editorLineNumber.activeForeground": "#d4d4d4",
-            "editorCursor.foreground": "#d4d4d4",
-            "editorIndentGuide.background1": "#2d2d2d",
-            "editorWidget.background": "#252526",
-            "editorWidget.border": "#3c3c3c",
-            "editorSuggestWidget.background": "#252526",
-            "editorSuggestWidget.selectedBackground": "#094771",
-            "editorHoverWidget.background": "#252526",
-            "scrollbarSlider.background": "#3c3c3caa"
-        }
-    };
+    // Build a Monaco theme from Friga's palette (colours pushed from ui/theme.py),
+    // so the editor tracks whatever app theme is active. `c` is theme.monaco_colours().
+    function buildTheme(c) {
+        c = c || {};
+        var strip = function (x) { return (x || "#000000").replace("#", ""); };
+        return {
+            base: c.base === "vs" ? "vs" : "vs-dark",
+            inherit: true,
+            rules: [
+                { token: "", foreground: strip(c.fg), background: strip(c.bg) },
+                { token: "comment", foreground: strip(c.faint) },
+                { token: "keyword", foreground: strip(c.accent) },
+                { token: "type", foreground: strip(c.accent) }
+            ],
+            colors: {
+                "editor.background": c.bg || "#0B0C0F",
+                "editor.foreground": c.fg || "#E6E8EC",
+                "editor.lineHighlightBackground": c.lineHighlight || "#262B35",
+                "editor.selectionBackground": c.selection || "#00000040",
+                "editorLineNumber.foreground": c.faint || "#5B616E",
+                "editorLineNumber.activeForeground": c.fg || "#E6E8EC",
+                "editorCursor.foreground": c.fg || "#E6E8EC",
+                "editorIndentGuide.background1": c.border || "#2A2E38",
+                "editorWidget.background": c.widgetBg || "#1F232C",
+                "editorWidget.border": c.border || "#2A2E38",
+                "editorSuggestWidget.background": c.widgetBg || "#1F232C",
+                "editorSuggestWidget.selectedBackground": c.selection || "#00000040",
+                "editorHoverWidget.background": c.widgetBg || "#1F232C",
+                "scrollbarSlider.background": (c.border || "#2A2E38") + "aa"
+            }
+        };
+    }
+
+    function applyTheme(monaco, colors) {
+        monaco.editor.defineTheme("friga", buildTheme(colors));
+        monaco.editor.setTheme("friga");
+    }
 
     function pushText() {
         if (!bridge || !editor) { return; }
@@ -105,14 +112,14 @@
         );
     }
 
-    function init(monaco, initialText, typings) {
-        monaco.editor.defineTheme("friga-dark", THEME);
+    function init(monaco, initialText, typings, colors) {
+        applyTheme(monaco, colors);
         configureLanguage(monaco, typings);
 
         editor = monaco.editor.create(document.getElementById("root"), {
             value: initialText,
             language: "javascript",
-            theme: "friga-dark",
+            theme: "friga",
             automaticLayout: true,
             fontFamily: '"JetBrains Mono", "Cascadia Mono", "Consolas", monospace',
             fontSize: 13,
@@ -181,6 +188,10 @@
             if (editor) { editor.updateOptions({ readOnly: !!flag }); }
         },
 
+        setTheme: function (colors) {
+            if (window.__monaco) { applyTheme(window.__monaco, colors); }
+        },
+
         focusEditor: function () {
             if (editor) { editor.focus(); }
         },
@@ -225,7 +236,7 @@
             window.__monaco = monaco;
             bridge.get_editor_payload(function (raw) {
                 var payload = JSON.parse(raw);
-                init(monaco, payload.text || "", payload.typings || []);
+                init(monaco, payload.text || "", payload.typings || [], payload.theme);
             });
         });
     }

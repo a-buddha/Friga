@@ -8,12 +8,18 @@
 
 block_cipher = None
 
+from PyInstaller.utils.hooks import collect_data_files
+
 datas = [
     ("bundled", "bundled"),
-    # assets/ carries the fonts *and* assets/monaco (~23 MB: the vendored Monaco
-    # editor plus the Frida .d.ts typings), served over the friga:// scheme.
+    # assets/ carries the fonts (Inter + JetBrains Mono) *and* assets/monaco
+    # (~23 MB: the vendored Monaco editor + Frida .d.ts typings), served over the
+    # friga:// scheme.
     ("assets", "assets"),
 ]
+# qtawesome ships its icon fonts + charmaps as package data; without these the
+# icons silently vanish in a frozen build (the app still runs, text-only).
+datas += collect_data_files("qtawesome")
 
 hiddenimports = [
     "PyQt6.Qsci",
@@ -22,6 +28,7 @@ hiddenimports = [
     "PyQt6.QtWebEngineWidgets",
     "PyQt6.QtWebEngineCore",
     "PyQt6.QtWebChannel",
+    "qtawesome",
     "frida",
 ]
 

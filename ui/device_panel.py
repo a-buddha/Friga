@@ -20,13 +20,18 @@ from PyQt6.QtWidgets import (
 )
 
 from core.adb_manager import AdbManager, Device, DeviceStatus
+from ui import theme
 
-_STATUS_COLOURS = {
-    DeviceStatus.CONNECTED: "#4ec9b0",
-    DeviceStatus.UNAUTHORIZED: "#dcdcaa",
-    DeviceStatus.OFFLINE: "#f44747",
-    DeviceStatus.UNKNOWN: "#9b9b9b",
-}
+
+def _status_colour(status: DeviceStatus) -> str:
+    # Resolved at call time so it follows the active theme.
+    return {
+        DeviceStatus.CONNECTED: theme.SUCCESS,
+        DeviceStatus.UNAUTHORIZED: theme.WARNING,
+        DeviceStatus.OFFLINE: theme.ERROR,
+        DeviceStatus.UNKNOWN: theme.FG_MUTED,
+    }.get(status, theme.FG)
+
 
 _HEADERS = ["Serial", "Model", "Android", "Status"]
 
@@ -56,7 +61,7 @@ class DevicePanel(QWidget):
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.ResizeToContents)
 
         self._summary = QLabel("No devices found.")
-        self._summary.setStyleSheet("color: #9b9b9b;")
+        self._summary.setStyleSheet(f"color: {theme.FG_MUTED};")
 
         self._refresh_button = QPushButton("Rescan Devices")
         self._refresh_button.clicked.connect(self._adb.refresh)
@@ -73,6 +78,14 @@ class DevicePanel(QWidget):
 
         self._table.itemSelectionChanged.connect(self._on_selection_changed)
         self._adb.devices_updated.connect(self._populate)
+        theme.bus.changed.connect(self._on_theme_changed)
+
+    def _on_theme_changed(self, _name: str) -> None:
+        self._summary.setStyleSheet(f"color: {theme.FG_MUTED};")
+        for row, device in enumerate(self._devices):
+            item = self._table.item(row, 3)
+            if item is not None:
+                item.setForeground(QColor(_status_colour(device.status)))
 
     @property
     def selected_serial(self) -> str | None:
@@ -102,8 +115,7 @@ class DevicePanel(QWidget):
             self._set_cell(row, 2, device.android_version)
 
             status_item = QTableWidgetItem(device.status.label)
-            colour = _STATUS_COLOURS.get(device.status, "#d4d4d4")
-            status_item.setForeground(QColor(colour))
+            status_item.setForeground(QColor(_status_colour(device.status)))
             self._table.setItem(row, 3, status_item)
 
         usable = sum(1 for d in devices if d.is_usable)

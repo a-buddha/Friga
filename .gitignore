@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+
+# Bundled tool binaries (adb, frida-server, JRE, apktool, gadgets) — shipped as a
+# GitHub Release asset, not committed. ~450 MB.
+bundled/
+
+# Runtime-generated data (created next to the app on first use)
+output/
+keystore/
+
+# Personal bug bounty project
+bug_bounty/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+*:Zone.Identifier
