@@ -8,19 +8,22 @@
 ```
 A desktop GUI for the Frida (https://frida.re) instrumentation toolkit, aimed at
 people who want to do mobile security testing without living in the CLI. Built as
-my final year project
+my final year project.
 
-This started as just device discovery and a console; since then I've been building it out. This includes the frida-server deployment, process attach and spawn, a script editor, and one-click APK patching. Always trying to improve the application.
+It started as just device discovery and a console. Since then it has grown into a
+full launcher-style app: frida-server deployment, process attach and spawn-time
+instrumentation, a VS Code editor with the Frida API typed in, one-click APK
+patching, and a themeable UI. Always trying to improve it.
 
 ## What works so far
 ~ Detects USB-connected Android devices over ADB (serial, model, version, status), on a background thread so the UI never freezes\
 ~ Pushes and starts frida-server on rooted devices/emulators, auto-matching the device architecture\
-~ Lists running processes and lets you attach to one, or spawn an app fresh\
-~ A JavaScript editor with a script library to write and run Frida hooks, output streamed to the console\
+~ Lists running processes and lets you attach to one, or spawn an app with your script injected before it starts, so anti-root and SSL-pinning hooks run before the app's first line of code\
+~ A built-in Monaco editor (the same editor as VS Code) with the Frida API typed in, so you get real autocomplete on Java.use, Interceptor.attach and the rest, plus a script library, with output streamed to the console\
 ~ One-click APK patching that injects frida-gadget, so non-rooted devices can be instrumented too (plus a design-preview IPA screen because iOS is out of scope for the FYP)\
 ~ Log search with one-tap filters for sensitive keywords (password, token, etc.) to go back through a session\
-~ A menu bar, toolbar, and Save/Load Project so you can reopen a session where you left off\
-~ Dark theme, an output console that keeps the whole session log, and it packages into a standalone build so it runs without installing Python
+~ A launcher-style interface with a left nav rail, a custom title bar, and Save/Load Project so you can reopen a session where you left off\
+~ Six colour themes (a red-team default plus blue-team, matrix, nord, dracula and a light mode), an output console that keeps the whole session log, and it packages into a standalone build so it runs without installing Python
 
 ## To Run
 Needs Python 3.10+ and ADB on PATH environment variables.
@@ -61,7 +64,7 @@ Then grab the matching builds for your device's architecture (one of `arm`, `arm
 For APK patching you'll also want `apktool.jar` in `bundled/apktool/` and `apksigner.jar` in `bundled/apksigner/`, plus a JRE, or just have `java`, `apktool` and `apksigner` on your PATH.
 
 ## Layout
-core/   the app logic including ADB, frida sessions, server deployment, APK patching, logging\
-ui/     the PyQt6 panels and the main window\
-main.py entry point
-
+core/    the app logic including ADB, frida sessions, server deployment, APK patching, logging\
+ui/      the PyQt6 panels, the launcher shell widgets, and the Monaco editor bridge\
+assets/  the bundled Monaco editor, UI fonts and Frida typings\
+main.py  entry point
